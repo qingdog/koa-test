@@ -208,9 +208,14 @@ router.get("/", async (ctx) => {
     data: "1234"
   };
 });
+var CLOSE_MARK_MSG = "--dev-zuo[DONE]dev-zuo--";
 router.post("/chat-process", async (ctx, next) => {
-  ctx.set("Content-type", "application/octet-stream");
-  const passThrough = new PassThrough();
+  ctx.set({
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache",
+    Connection: "keep-alive"
+  });
+  const steamData = new PassThrough();
   try {
     const {
       prompt,
@@ -225,6 +230,16 @@ router.post("/chat-process", async (ctx, next) => {
       lastContext: options,
       process: (chat) => {
         console.log(chat);
+        steamData.write(`data:${JSON.stringify(chat.text)}
+
+`);
+        if (chat.detail.choices[0].finish_reason === "stop") {
+          console.log("\u54CD\u5E94\u5DF2\u7ED3\u675F", chat.text);
+          steamData.write(`data:${CLOSE_MARK_MSG}
+
+`);
+          steamData.end();
+        }
         firstChunk = false;
       },
       systemMessage,

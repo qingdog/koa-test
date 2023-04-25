@@ -10,6 +10,7 @@ import { PassThrough } from "stream";
 import { chatConfig, chatReplyProcess, currentModel } from "./chatgpt";
 import { isNotEmptyString } from "./utils/is";
 
+
 const app = new Koa();
 const staticPath = "../static";
 // console.log(__dirname)
@@ -22,9 +23,15 @@ router.get("/", async (ctx) => {
     data: "1234",
   };
 });
+// SSE 请求，不返回标准 JSON，而是 UTF-8 文本
+const CLOSE_MARK_MSG = "--dev-zuo[DONE]dev-zuo--";
 router.post("/chat-process", async (ctx, next) => {
-  ctx.set('Content-type', 'application/octet-stream')
-  const passThrough = new PassThrough();
+  ctx.set({
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache",
+    Connection: "keep-alive",
+  });
+  const steamData = new PassThrough();
   try {
     const {
       prompt,
@@ -48,6 +55,13 @@ router.post("/chat-process", async (ctx, next) => {
         // passThrough.write(
         //   firstChunk ? JSON.stringify(chat) : `\n${JSON.stringify(chat)}`
         // );
+        steamData.write(`data:${JSON.stringify(chat.text)}\n\n`);
+        // {"role":"assistant","id":"chatcmpl-74YzUfLNYFwbATCpNNEyg55UeAwi7","parentMessageId":"9a9fd7a2-8b9b-4e40-96ab-176bf80f1f43","text":"您好！","detail":{"id":"chatcmpl-74YzUfLNYFwbATCpNNEyg55UeAwi7","object":"chat.completion.chunk","created":1681322172,"model":"gpt-3.5-turbo-0301","choices":[{"delta":{},"index":0,"finish_reason":"stop"}]}}
+        if (chat.detail.choices[0].finish_reason === "stop") {
+          console.log("响应已结束", chat.text); // print the full text at the end
+          steamData.write(`data:${CLOSE_MARK_MSG}\n\n`);
+          steamData.end();
+        }
         firstChunk = false;
       },
       systemMessage,
