@@ -29,7 +29,7 @@ router.post("/chat-process", async (ctx, next) => {
     "Content-Type": "text/event-stream",
     "Cache-Control": "no-cache",
     Connection: "keep-alive",
-    "Transfer-Encoding": "chunked",
+    // "Transfer-Encoding": "chunked",
   });
   const steamData = new PassThrough();
   ctx.body = steamData;
