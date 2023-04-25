@@ -11,6 +11,7 @@ import koaBodyParser from "koa-bodyparser";
 import Router from "koa-router";
 import KoaStatic from "koa-static";
 import path2 from "path";
+import { PassThrough } from "stream";
 
 // src/chatgpt/index.ts
 import * as dotenv from "dotenv";
@@ -209,6 +210,7 @@ router.get("/", async (ctx) => {
 });
 router.post("/chat-process", async (ctx, next) => {
   ctx.set("Content-type", "application/octet-stream");
+  const passThrough = new PassThrough();
   try {
     const {
       prompt,
@@ -225,6 +227,11 @@ router.post("/chat-process", async (ctx, next) => {
       process: (chat) => {
         res.write(firstChunk ? JSON.stringify(chat) : `
 ${JSON.stringify(chat)}`);
+        ctx.body = passThrough;
+        passThrough.write(
+          firstChunk ? JSON.stringify(chat) : `
+${JSON.stringify(chat)}`
+        );
         firstChunk = false;
       },
       systemMessage,

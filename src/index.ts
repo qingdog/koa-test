@@ -6,7 +6,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import type { RequestProps } from "./types";
 import type { ChatMessage } from "chatgpt";
-// import { Readable, PassThrough } from "stream";
+import {  PassThrough } from "stream";
 import { chatConfig, chatReplyProcess, currentModel } from "./chatgpt";
 import { isNotEmptyString } from "./utils/is";
 
@@ -24,7 +24,7 @@ router.get("/", async (ctx) => {
 });
 router.post("/chat-process", async (ctx, next) => {
   ctx.set('Content-type', 'application/octet-stream')
-  // const passThrough = new PassThrough();
+  const passThrough = new PassThrough();
   try {
     const {
       prompt,
@@ -40,13 +40,13 @@ router.post("/chat-process", async (ctx, next) => {
       lastContext: options,
       process: (chat: ChatMessage) => {
         res.write(firstChunk ? JSON.stringify(chat) : `\n${JSON.stringify(chat)}`)
-        // ctx.body = passThrough;
+        ctx.body = passThrough;
         // res.write(firstChunk ? JSON.stringify(chat) : `\n${JSON.stringify(chat)}`)
         // stream.write(firstChunk ? JSON.stringify(chat) : `\n${JSON.stringify(chat)}`)
         // ctx.body = firstChunk ? JSON.stringify(chat) : `\n${JSON.stringify(chat)}`
-        // passThrough.write(
-        //   firstChunk ? JSON.stringify(chat) : `\n${JSON.stringify(chat)}`
-        // );
+        passThrough.write(
+          firstChunk ? JSON.stringify(chat) : `\n${JSON.stringify(chat)}`
+        );
         firstChunk = false;
       },
       systemMessage,
