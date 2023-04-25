@@ -232,9 +232,8 @@ router.post("/chat-process", async (ctx, next) => {
       lastContext: options,
       process: (chat) => {
         console.log(chat);
-        steamData.write(`${JSON.stringify({ text: chat.text })}
-
-`);
+        steamData.write(firstChunk ? JSON.stringify(chat) : `
+${JSON.stringify(chat)}`);
         if (chat.detail.choices[0].finish_reason === "stop") {
           console.log("\u54CD\u5E94\u5DF2\u7ED3\u675F", chat.text);
           steamData.write(`data:${CLOSE_MARK_MSG}
