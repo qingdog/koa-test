@@ -6,7 +6,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import type { RequestProps } from "./types";
 import type { ChatMessage } from "chatgpt";
-import {  PassThrough } from "stream";
+import { PassThrough } from "stream";
 import { chatConfig, chatReplyProcess, currentModel } from "./chatgpt";
 import { isNotEmptyString } from "./utils/is";
 
@@ -34,14 +34,14 @@ router.post("/chat-process", async (ctx, next) => {
       top_p,
     } = ctx.request.body as RequestProps;
     let firstChunk = true;
-    const res = ctx.res
-    await chatReplyProcess({
+    // const res = ctx.res
+    const res = await chatReplyProcess({
       message: prompt,
       lastContext: options,
       process: (chat: ChatMessage) => {
         // res.write(firstChunk ? JSON.stringify(chat) : `\n${JSON.stringify(chat)}`)
         // ctx.body = passThrough;
-        res.write(firstChunk ? JSON.stringify(chat) : `\n${JSON.stringify(chat)}`)
+        // res.write(firstChunk ? JSON.stringify(chat) : `\n${JSON.stringify(chat)}`)
         // stream.write(firstChunk ? JSON.stringify(chat) : `\n${JSON.stringify(chat)}`)
         // ctx.body = firstChunk ? JSON.stringify(chat) : `\n${JSON.stringify(chat)}`
         // passThrough.write(
@@ -53,6 +53,7 @@ router.post("/chat-process", async (ctx, next) => {
       temperature,
       top_p,
     });
+    ctx.body = res
   } catch (error) {
     // res.write(JSON.stringify(error))
     ctx.body = error;
@@ -120,7 +121,7 @@ home.get("/test", async (ctx) => {
     let i = 0,
       total = 5;
     while (i <= total) {
-      (function(i) {
+      (function (i) {
         setTimeout(() => {
           if (i === total) {
             resolve();

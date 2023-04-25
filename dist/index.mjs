@@ -220,19 +220,17 @@ router.post("/chat-process", async (ctx, next) => {
       top_p
     } = ctx.request.body;
     let firstChunk = true;
-    const res = ctx.res;
-    await chatReplyProcess({
+    const res = await chatReplyProcess({
       message: prompt,
       lastContext: options,
       process: (chat) => {
-        res.write(firstChunk ? JSON.stringify(chat) : `
-${JSON.stringify(chat)}`);
         firstChunk = false;
       },
       systemMessage,
       temperature,
       top_p
     });
+    ctx.body = res;
   } catch (error) {
     ctx.body = error;
   } finally {
