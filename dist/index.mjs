@@ -1,17 +1,5 @@
-// node_modules/.pnpm/registry.npmmirror.com+tsup@6.7.0_6qtx7vkbdhwvdm4crzlegk4mvi/node_modules/tsup/assets/esm_shims.js
-import { fileURLToPath } from "url";
-import path from "path";
-var getFilename = () => fileURLToPath(import.meta.url);
-var getDirname = () => path.dirname(getFilename());
-var __dirname = /* @__PURE__ */ getDirname();
-
 // src/index.ts
-import Koa from "koa";
-import koaBodyParser from "koa-bodyparser";
-import Router from "koa-router";
-import KoaStatic from "koa-static";
-import path2 from "path";
-import { PassThrough } from "stream";
+import express from "express";
 
 // src/chatgpt/index.ts
 import * as dotenv from "dotenv";
@@ -198,49 +186,109 @@ function currentModel() {
   return apiModel;
 }
 
-// src/index.ts
-var app = new Koa();
-var staticPath = "../static";
-app.use(KoaStatic(path2.join(__dirname, staticPath)));
-var router = new Router();
-router.get("/", async (ctx) => {
-  ctx.body = {
-    data: "1234"
-  };
+// src/middleware/auth.ts
+var auth = async (req, res, next) => {
+  const AUTH_SECRET_KEY = process.env.AUTH_SECRET_KEY;
+  if (isNotEmptyString(AUTH_SECRET_KEY)) {
+    try {
+      const Authorization = req.header("Authorization");
+      if (!Authorization || Authorization.replace("Bearer ", "").trim() !== AUTH_SECRET_KEY.trim())
+        throw new Error("Error: \u65E0\u8BBF\u95EE\u6743\u9650 | No access rights");
+      next();
+    } catch (error) {
+      res.send({ status: "Unauthorized", message: error.message ?? "Please authenticate.", data: null });
+    }
+  } else {
+    next();
+  }
+};
+
+// src/middleware/limiter.ts
+import { rateLimit } from "express-rate-limit";
+var MAX_REQUEST_PER_HOUR = process.env.MAX_REQUEST_PER_HOUR;
+var maxCount = isNotEmptyString(MAX_REQUEST_PER_HOUR) && !isNaN(Number(MAX_REQUEST_PER_HOUR)) ? parseInt(MAX_REQUEST_PER_HOUR) : 0;
+var limiter = rateLimit({
+  windowMs: 60 * 60 * 1e3,
+  // Maximum number of accesses within an hour
+  max: maxCount,
+  statusCode: 200,
+  // 200 means success，but the message is 'Too many request from this IP in 1 hour'
+  message: async (req, res) => {
+    res.send({ status: "Fail", message: "Too many request from this IP in 1 hour", data: null });
+  }
 });
-var CLOSE_MARK_MSG = "--dev-zuo[DONE]dev-zuo--";
-router.post("/chat-process", async (ctx, next) => {
-  ctx.set({
-    "Content-Type": "text/event-stream",
+
+// src/index.ts
+var app = express();
+var router = express.Router();
+app.use(express.static("public"));
+app.use(express.json());
+app.all("*", (_, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "authorization, Content-Type");
+  res.header("Access-Control-Allow-Methods", "*");
+  next();
+});
+var writeServerSendEvent = (res, data, eid) => {
+  if (eid)
+    res.write(`id: ${eid}
+`);
+  res.write(`data: ${data}
+
+`);
+};
+router.post("/chat-sse", [auth, limiter], async (req, res) => {
+  const { csid, prompt, options = {}, systemMessage } = req.body;
+  const headers = {
     "Cache-Control": "no-cache",
-    Connection: "keep-alive"
-    // "Transfer-Encoding": "chunked",
-  });
-  const steamData = new PassThrough();
-  ctx.body = steamData;
+    "Connection": "keep-alive",
+    "Content-Type": "text/event-stream",
+    "Access-Control-Allow-Origin": "*"
+  };
+  let ncsid = csid;
+  if (!csid) {
+    ncsid = Date.now().toString(36);
+    headers["Conversation-ID"] = ncsid;
+  }
+  res.writeHead(200, headers);
   try {
-    const {
-      prompt,
-      options = {},
-      systemMessage,
-      temperature,
-      top_p
-    } = ctx.request.body;
-    let firstChunk = true;
-    const res = await chatReplyProcess({
+    options.conversationId = ncsid;
+    await chatReplyProcess({
       message: prompt,
       lastContext: options,
       process: (chat) => {
-        console.log(chat);
-        steamData.write(firstChunk ? JSON.stringify(chat) : `
+        const message = {
+          id: chat.id,
+          csid: chat.conversationId || csid || ncsid,
+          pmid: chat.parentMessageId,
+          delta: chat.delta
+          // The other fields are not needed at the moment.
+        };
+        if (!chat.delta && chat.text)
+          message.text = chat.text;
+        if (chat.detail && chat.detail.choices.length > 0 && chat.detail.choices[0].finish_reason)
+          message.finishReason = chat.detail.choices[0].finish_reason;
+        writeServerSendEvent(res, JSON.stringify(message));
+      },
+      systemMessage
+    });
+  } catch (error) {
+    res.write(JSON.stringify(error));
+  } finally {
+    res.end();
+  }
+});
+router.post("/chat-process", [auth, limiter], async (req, res) => {
+  res.setHeader("Content-type", "application/octet-stream");
+  try {
+    const { prompt, options = {}, systemMessage, temperature, top_p } = req.body;
+    let firstChunk = true;
+    await chatReplyProcess({
+      message: prompt,
+      lastContext: options,
+      process: (chat) => {
+        res.write(firstChunk ? JSON.stringify(chat) : `
 ${JSON.stringify(chat)}`);
-        if (chat.detail.choices[0].finish_reason === "stop") {
-          console.log("\u54CD\u5E94\u5DF2\u7ED3\u675F", chat.text);
-          steamData.write(`data:${CLOSE_MARK_MSG}
-
-`);
-          steamData.end();
-        }
         firstChunk = false;
       },
       systemMessage,
@@ -248,82 +296,43 @@ ${JSON.stringify(chat)}`);
       top_p
     });
   } catch (error) {
-    ctx.body = error;
+    res.write(JSON.stringify(error));
   } finally {
-    next();
+    res.end();
   }
 });
-router.post("/config", async (ctx) => {
+router.post("/config", auth, async (req, res) => {
   try {
     const response = await chatConfig();
-    ctx.body = response;
+    res.send(response);
   } catch (error) {
-    ctx.body = error;
+    res.send(error);
   }
 });
-router.post("/session", async (ctx) => {
+router.post("/session", async (req, res) => {
   try {
     const AUTH_SECRET_KEY = process.env.AUTH_SECRET_KEY;
     const hasAuth = isNotEmptyString(AUTH_SECRET_KEY);
-    ctx.body = {
-      status: "Success",
-      message: "",
-      data: { auth: hasAuth, model: currentModel() }
-    };
+    res.send({ status: "Success", message: "", data: { auth: hasAuth, model: currentModel() } });
   } catch (error) {
-    ctx.body = { status: "Fail", message: error.message, data: null };
+    res.send({ status: "Fail", message: error.message, data: null });
   }
 });
-router.post("/verify", async (ctx, next) => {
+router.post("/verify", async (req, res) => {
   try {
-    const { token } = ctx.request.body;
+    const { token } = req.body;
     if (!token)
       throw new Error("Secret key is empty");
     if (process.env.AUTH_SECRET_KEY !== token)
       throw new Error("\u5BC6\u94A5\u65E0\u6548 | Secret key is invalid");
-    ctx.body = {
-      status: "Success",
-      message: "Verify successfully",
-      data: null
-    };
+    res.send({ status: "Success", message: "Verify successfully", data: null });
   } catch (error) {
-    ctx.body = { status: "Fail", message: error.message, data: null };
+    res.send({ status: "Fail", message: error.message, data: null });
   }
 });
-var home = new Router();
-home.get("/test", async (ctx) => {
-  const res = ctx.res;
-  ctx.status = 200;
-  ctx.set({
-    "Content-Type": "text/event-stream",
-    "Cache-Control": "no-cache",
-    Connection: "keep-alive",
-    "Transfer-Encoding": "chunked"
-  });
-  res.write(`start<br>`);
-  return new Promise((resolve) => {
-    let i = 0, total = 5;
-    while (i <= total) {
-      (function(i2) {
-        setTimeout(() => {
-          if (i2 === total) {
-            resolve();
-            res.end();
-          } else {
-            res.write(`${i2}<br>`);
-          }
-        }, i2 * 1e3);
-      })(i);
-      i++;
-    }
-  });
-});
-var rootRouter = new Router();
-rootRouter.use("/home", home.routes(), home.allowedMethods());
-rootRouter.use("/api", router.routes(), router.allowedMethods());
-app.use(koaBodyParser());
-app.use(rootRouter.routes()).use(rootRouter.allowedMethods());
-app.listen(process.env.PORT || 9020, () => {
-  console.log("\u542F\u52A8\u4E86");
-});
+app.use("", router);
+app.use("/api", router);
+app.set("trust proxy", 1);
+var port = process.env.SERVICE_PORT || 3002;
+app.listen(port, () => globalThis.console.log(`Server is running on port ${port}`));
 //# sourceMappingURL=index.mjs.map
