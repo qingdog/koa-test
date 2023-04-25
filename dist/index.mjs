@@ -213,7 +213,8 @@ router.post("/chat-process", async (ctx, next) => {
   ctx.set({
     "Content-Type": "text/event-stream",
     "Cache-Control": "no-cache",
-    Connection: "keep-alive"
+    Connection: "keep-alive",
+    "Transfer-Encoding": "chunked"
   });
   const steamData = new PassThrough();
   ctx.body = steamData;
@@ -294,9 +295,12 @@ var home = new Router();
 home.get("/test", async (ctx) => {
   const res = ctx.res;
   ctx.status = 200;
-  res.setHeader("Content-Type", "text/html");
-  res.setHeader("Cache-Control", "no-cache, no-transform");
-  res.setHeader("X-Accel-Buffering", "no");
+  ctx.set({
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache",
+    Connection: "keep-alive",
+    "Transfer-Encoding": "chunked"
+  });
   res.write(`start<br>`);
   return new Promise((resolve) => {
     let i = 0, total = 5;

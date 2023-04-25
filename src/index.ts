@@ -10,7 +10,6 @@ import { PassThrough } from "stream";
 import { chatConfig, chatReplyProcess, currentModel } from "./chatgpt";
 import { isNotEmptyString } from "./utils/is";
 
-
 const app = new Koa();
 const staticPath = "../static";
 // console.log(__dirname)
@@ -30,6 +29,7 @@ router.post("/chat-process", async (ctx, next) => {
     "Content-Type": "text/event-stream",
     "Cache-Control": "no-cache",
     Connection: "keep-alive",
+    "Transfer-Encoding": "chunked",
   });
   const steamData = new PassThrough();
   ctx.body = steamData;
@@ -47,7 +47,7 @@ router.post("/chat-process", async (ctx, next) => {
       message: prompt,
       lastContext: options,
       process: (chat: ChatMessage) => {
-        console.log(chat)
+        console.log(chat);
         // res.write(firstChunk ? JSON.stringify(chat) : `\n${JSON.stringify(chat)}`)
         // ctx.body = passThrough;
         // res.write(firstChunk ? JSON.stringify(chat) : `\n${JSON.stringify(chat)}`)
@@ -127,11 +127,14 @@ const home = new Router();
 home.get("/test", async (ctx) => {
   const res = ctx.res;
   ctx.status = 200;
-  res.setHeader("Content-Type", "text/html");
-  res.setHeader('Cache-Control', 'no-cache, no-transform')
-  res.setHeader('X-Accel-Buffering', 'no')
+  ctx.set({
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache",
+    Connection: "keep-alive",
+    "Transfer-Encoding": "chunked",
+  });
   res.write(`start<br>`);
-  return new Promise<void>(resolve => {
+  return new Promise<void>((resolve) => {
     let i = 0,
       total = 5;
     while (i <= total) {
