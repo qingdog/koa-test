@@ -39,6 +39,7 @@ router.post("/chat-process", async (ctx, next) => {
       message: prompt,
       lastContext: options,
       process: (chat: ChatMessage) => {
+        console.log(chat)
         // res.write(firstChunk ? JSON.stringify(chat) : `\n${JSON.stringify(chat)}`)
         // ctx.body = passThrough;
         // res.write(firstChunk ? JSON.stringify(chat) : `\n${JSON.stringify(chat)}`)

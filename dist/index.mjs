@@ -224,6 +224,7 @@ router.post("/chat-process", async (ctx, next) => {
       message: prompt,
       lastContext: options,
       process: (chat) => {
+        console.log(chat);
         firstChunk = false;
       },
       systemMessage,
