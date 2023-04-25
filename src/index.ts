@@ -39,14 +39,14 @@ router.post("/chat-process", async (ctx, next) => {
       message: prompt,
       lastContext: options,
       process: (chat: ChatMessage) => {
-        res.write(firstChunk ? JSON.stringify(chat) : `\n${JSON.stringify(chat)}`)
-        ctx.body = passThrough;
         // res.write(firstChunk ? JSON.stringify(chat) : `\n${JSON.stringify(chat)}`)
+        // ctx.body = passThrough;
+        res.write(firstChunk ? JSON.stringify(chat) : `\n${JSON.stringify(chat)}`)
         // stream.write(firstChunk ? JSON.stringify(chat) : `\n${JSON.stringify(chat)}`)
         // ctx.body = firstChunk ? JSON.stringify(chat) : `\n${JSON.stringify(chat)}`
-        passThrough.write(
-          firstChunk ? JSON.stringify(chat) : `\n${JSON.stringify(chat)}`
-        );
+        // passThrough.write(
+        //   firstChunk ? JSON.stringify(chat) : `\n${JSON.stringify(chat)}`
+        // );
         firstChunk = false;
       },
       systemMessage,

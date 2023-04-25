@@ -227,11 +227,6 @@ router.post("/chat-process", async (ctx, next) => {
       process: (chat) => {
         res.write(firstChunk ? JSON.stringify(chat) : `
 ${JSON.stringify(chat)}`);
-        ctx.body = passThrough;
-        passThrough.write(
-          firstChunk ? JSON.stringify(chat) : `
-${JSON.stringify(chat)}`
-        );
         firstChunk = false;
       },
       systemMessage,
