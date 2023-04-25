@@ -246,7 +246,6 @@ router.post("/chat-process", async (ctx, next) => {
       temperature,
       top_p
     });
-    ctx.body = res;
   } catch (error) {
     ctx.body = error;
   } finally {
