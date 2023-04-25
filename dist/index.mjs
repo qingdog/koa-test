@@ -232,7 +232,7 @@ router.post("/chat-process", async (ctx, next) => {
       lastContext: options,
       process: (chat) => {
         console.log(chat);
-        steamData.write(`data:${JSON.stringify(chat.text)}
+        steamData.write(`${JSON.stringify({ text: chat.text })}
 
 `);
         if (chat.detail.choices[0].finish_reason === "stop") {

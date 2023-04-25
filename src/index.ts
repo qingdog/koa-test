@@ -56,7 +56,7 @@ router.post("/chat-process", async (ctx, next) => {
         // passThrough.write(
         //   firstChunk ? JSON.stringify(chat) : `\n${JSON.stringify(chat)}`
         // );
-        steamData.write(`data:${JSON.stringify(chat.text)}\n\n`);
+        steamData.write(`${JSON.stringify({ text: chat.text })}\n\n`);
         // {"role":"assistant","id":"chatcmpl-74YzUfLNYFwbATCpNNEyg55UeAwi7","parentMessageId":"9a9fd7a2-8b9b-4e40-96ab-176bf80f1f43","text":"您好！","detail":{"id":"chatcmpl-74YzUfLNYFwbATCpNNEyg55UeAwi7","object":"chat.completion.chunk","created":1681322172,"model":"gpt-3.5-turbo-0301","choices":[{"delta":{},"index":0,"finish_reason":"stop"}]}}
         if (chat.detail.choices[0].finish_reason === "stop") {
           console.log("响应已结束", chat.text); // print the full text at the end
