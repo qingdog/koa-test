@@ -216,6 +216,7 @@ router.post("/chat-process", async (ctx, next) => {
     Connection: "keep-alive"
   });
   const steamData = new PassThrough();
+  ctx.body = steamData;
   try {
     const {
       prompt,

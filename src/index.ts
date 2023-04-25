@@ -32,6 +32,7 @@ router.post("/chat-process", async (ctx, next) => {
     Connection: "keep-alive",
   });
   const steamData = new PassThrough();
+  ctx.body = steamData;
   try {
     const {
       prompt,
@@ -69,7 +70,6 @@ router.post("/chat-process", async (ctx, next) => {
       top_p,
     });
   } catch (error) {
-    // res.write(JSON.stringify(error))
     ctx.body = error;
   } finally {
     // ctx.end()
