@@ -342,9 +342,9 @@ router.post("/chat-process", async (ctx, next) => {
     Connection: "keep-alive"
     // "Transfer-Encoding": "chunked",
   });
-  const res = await OpenAIStream(ctx.request.body);
-  console.log(res);
-  ctx.body = res;
+  const stream = await OpenAIStream(ctx.request.body);
+  console.log(stream);
+  ctx.body = new Response(stream);
 });
 router.post("/config", async (ctx) => {
   try {
