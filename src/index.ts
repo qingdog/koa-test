@@ -30,7 +30,7 @@ router.post("/chat-process", async (ctx, next) => {
   });
   const stream = await OpenAIStream(ctx.request.body)
   console.log(stream)
-  ctx.body = new Response(stream)
+  return new Response(stream)
   // const steamData = new PassThrough();
   // ctx.body = steamData;
   // try {

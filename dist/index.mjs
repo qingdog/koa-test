@@ -344,7 +344,7 @@ router.post("/chat-process", async (ctx, next) => {
   });
   const stream = await OpenAIStream(ctx.request.body);
   console.log(stream);
-  ctx.body = new Response(stream);
+  return new Response(stream);
 });
 router.post("/config", async (ctx) => {
   try {
