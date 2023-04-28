@@ -11,7 +11,6 @@ import koaBodyParser from "koa-bodyparser";
 import Router from "koa-router";
 import KoaStatic from "koa-static";
 import path2 from "path";
-import { PassThrough } from "stream";
 
 // src/chatgpt/index.ts
 import * as dotenv from "dotenv";
@@ -19,7 +18,7 @@ import "isomorphic-fetch";
 import { ChatGPTAPI, ChatGPTUnofficialProxyAPI } from "chatgpt";
 import { SocksProxyAgent } from "socks-proxy-agent";
 import httpsProxyAgent from "https-proxy-agent";
-import fetch from "node-fetch";
+import fetch2 from "node-fetch";
 
 // src/utils/index.ts
 function sendResponse(options) {
@@ -45,14 +44,6 @@ function isNotEmptyString(value) {
 // src/chatgpt/index.ts
 var { HttpsProxyAgent } = httpsProxyAgent;
 dotenv.config();
-var ErrorCodeMessage = {
-  401: "[OpenAI] \u63D0\u4F9B\u9519\u8BEF\u7684API\u5BC6\u94A5 | Incorrect API key provided",
-  403: "[OpenAI] \u670D\u52A1\u5668\u62D2\u7EDD\u8BBF\u95EE\uFF0C\u8BF7\u7A0D\u540E\u518D\u8BD5 | Server refused to access, please try again later",
-  502: "[OpenAI] \u9519\u8BEF\u7684\u7F51\u5173 |  Bad Gateway",
-  503: "[OpenAI] \u670D\u52A1\u5668\u7E41\u5FD9\uFF0C\u8BF7\u7A0D\u540E\u518D\u8BD5 | Server is busy, please try again later",
-  504: "[OpenAI] \u7F51\u5173\u8D85\u65F6 | Gateway Time-out",
-  500: "[OpenAI] \u670D\u52A1\u5668\u7E41\u5FD9\uFF0C\u8BF7\u7A0D\u540E\u518D\u8BD5 | Internal Server Error"
-};
 var timeoutMs = !isNaN(+process.env.TIMEOUT_MS) ? +process.env.TIMEOUT_MS : 100 * 1e3;
 var disableDebug = process.env.OPENAI_API_DISABLE_DEBUG === "true";
 var apiModel;
@@ -94,36 +85,6 @@ var api;
     apiModel = "ChatGPTUnofficialProxyAPI";
   }
 })();
-async function chatReplyProcess(options) {
-  const { message, lastContext, process: process2, systemMessage, temperature, top_p } = options;
-  try {
-    let options2 = { timeoutMs };
-    if (apiModel === "ChatGPTAPI") {
-      if (isNotEmptyString(systemMessage))
-        options2.systemMessage = systemMessage;
-      options2.completionParams = { model, temperature, top_p };
-    }
-    if (lastContext != null) {
-      if (apiModel === "ChatGPTAPI")
-        options2.parentMessageId = lastContext.parentMessageId;
-      else
-        options2 = { ...lastContext };
-    }
-    const response = await api.sendMessage(message, {
-      ...options2,
-      onProgress: (partialResponse) => {
-        process2?.(partialResponse);
-      }
-    });
-    return sendResponse({ type: "Success", data: response });
-  } catch (error) {
-    const code = error.statusCode;
-    global.console.log(error);
-    if (Reflect.has(ErrorCodeMessage, code))
-      return sendResponse({ type: "Fail", message: ErrorCodeMessage[code] });
-    return sendResponse({ type: "Fail", message: error.message ?? "Please check the back-end console" });
-  }
-}
 async function fetchUsage() {
   const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
   const OPENAI_API_BASE_URL = process.env.OPENAI_API_BASE_URL;
@@ -178,24 +139,190 @@ function setupProxy(options) {
       password: isNotEmptyString(process.env.SOCKS_PROXY_PASSWORD) ? process.env.SOCKS_PROXY_PASSWORD : void 0
     });
     options.fetch = (url, options2) => {
-      return fetch(url, { agent, ...options2 });
+      return fetch2(url, { agent, ...options2 });
     };
   } else if (isNotEmptyString(process.env.HTTPS_PROXY) || isNotEmptyString(process.env.ALL_PROXY)) {
     const httpsProxy = process.env.HTTPS_PROXY || process.env.ALL_PROXY;
     if (httpsProxy) {
       const agent = new HttpsProxyAgent(httpsProxy);
       options.fetch = (url, options2) => {
-        return fetch(url, { agent, ...options2 });
+        return fetch2(url, { agent, ...options2 });
       };
     }
   } else {
     options.fetch = (url, options2) => {
-      return fetch(url, { ...options2 });
+      return fetch2(url, { ...options2 });
     };
   }
 }
 function currentModel() {
   return apiModel;
+}
+
+// node_modules/.pnpm/eventsource-parser@1.0.0/node_modules/eventsource-parser/dist/index.js
+function createParser(onParse) {
+  let isFirstChunk;
+  let buffer;
+  let startingPosition;
+  let startingFieldLength;
+  let eventId;
+  let eventName;
+  let data;
+  reset();
+  return {
+    feed,
+    reset
+  };
+  function reset() {
+    isFirstChunk = true;
+    buffer = "";
+    startingPosition = 0;
+    startingFieldLength = -1;
+    eventId = void 0;
+    eventName = void 0;
+    data = "";
+  }
+  function feed(chunk) {
+    buffer = buffer ? buffer + chunk : chunk;
+    if (isFirstChunk && hasBom(buffer)) {
+      buffer = buffer.slice(BOM.length);
+    }
+    isFirstChunk = false;
+    const length = buffer.length;
+    let position = 0;
+    let discardTrailingNewline = false;
+    while (position < length) {
+      if (discardTrailingNewline) {
+        if (buffer[position] === "\n") {
+          ++position;
+        }
+        discardTrailingNewline = false;
+      }
+      let lineLength = -1;
+      let fieldLength = startingFieldLength;
+      let character;
+      for (let index = startingPosition; lineLength < 0 && index < length; ++index) {
+        character = buffer[index];
+        if (character === ":" && fieldLength < 0) {
+          fieldLength = index - position;
+        } else if (character === "\r") {
+          discardTrailingNewline = true;
+          lineLength = index - position;
+        } else if (character === "\n") {
+          lineLength = index - position;
+        }
+      }
+      if (lineLength < 0) {
+        startingPosition = length - position;
+        startingFieldLength = fieldLength;
+        break;
+      } else {
+        startingPosition = 0;
+        startingFieldLength = -1;
+      }
+      parseEventStreamLine(buffer, position, fieldLength, lineLength);
+      position += lineLength + 1;
+    }
+    if (position === length) {
+      buffer = "";
+    } else if (position > 0) {
+      buffer = buffer.slice(position);
+    }
+  }
+  function parseEventStreamLine(lineBuffer, index, fieldLength, lineLength) {
+    if (lineLength === 0) {
+      if (data.length > 0) {
+        onParse({
+          type: "event",
+          id: eventId,
+          event: eventName || void 0,
+          data: data.slice(0, -1)
+          // remove trailing newline
+        });
+        data = "";
+        eventId = void 0;
+      }
+      eventName = void 0;
+      return;
+    }
+    const noValue = fieldLength < 0;
+    const field = lineBuffer.slice(index, index + (noValue ? lineLength : fieldLength));
+    let step = 0;
+    if (noValue) {
+      step = lineLength;
+    } else if (lineBuffer[index + fieldLength + 1] === " ") {
+      step = fieldLength + 2;
+    } else {
+      step = fieldLength + 1;
+    }
+    const position = index + step;
+    const valueLength = lineLength - step;
+    const value = lineBuffer.slice(position, position + valueLength).toString();
+    if (field === "data") {
+      data += value ? "".concat(value, "\n") : "\n";
+    } else if (field === "event") {
+      eventName = value;
+    } else if (field === "id" && !value.includes("\0")) {
+      eventId = value;
+    } else if (field === "retry") {
+      const retry = parseInt(value, 10);
+      if (!Number.isNaN(retry)) {
+        onParse({
+          type: "reconnect-interval",
+          value: retry
+        });
+      }
+    }
+  }
+}
+var BOM = [239, 187, 191];
+function hasBom(buffer) {
+  return BOM.every((charCode, index) => buffer.charCodeAt(index) === charCode);
+}
+
+// src/chatgpt/OpenAIStream.ts
+async function OpenAIStream(payload) {
+  const encoder = new TextEncoder();
+  const decoder = new TextDecoder();
+  let counter = 0;
+  const res = await fetch("https://api.openai.com/v1/completions", {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env.OPENAI_API_KEY ?? ""}`
+    },
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+  const stream = new ReadableStream({
+    async start(controller) {
+      function onParse(event) {
+        if (event.type === "event") {
+          const data = event.data;
+          if (data === "[DONE]") {
+            controller.close();
+            return;
+          }
+          try {
+            const json = JSON.parse(data);
+            const text = json.choices[0].text;
+            if (counter < 2 && (text.match(/\n/) || []).length) {
+              return;
+            }
+            const queue = encoder.encode(text);
+            controller.enqueue(queue);
+            counter++;
+          } catch (e) {
+            controller.error(e);
+          }
+        }
+      }
+      const parser = createParser(onParse);
+      for await (const chunk of res.body) {
+        parser.feed(decoder.decode(chunk));
+      }
+    }
+  });
+  return stream;
 }
 
 // src/index.ts
@@ -208,7 +335,6 @@ router.get("/", async (ctx) => {
     data: "1234"
   };
 });
-var CLOSE_MARK_MSG = "--dev-zuo[DONE]dev-zuo--";
 router.post("/chat-process", async (ctx, next) => {
   ctx.set({
     "Content-Type": "text/event-stream",
@@ -216,42 +342,7 @@ router.post("/chat-process", async (ctx, next) => {
     Connection: "keep-alive"
     // "Transfer-Encoding": "chunked",
   });
-  const steamData = new PassThrough();
-  ctx.body = steamData;
-  try {
-    const {
-      prompt,
-      options = {},
-      systemMessage,
-      temperature,
-      top_p
-    } = ctx.request.body;
-    let firstChunk = true;
-    const res = await chatReplyProcess({
-      message: prompt,
-      lastContext: options,
-      process: (chat) => {
-        console.log(chat);
-        steamData.write(firstChunk ? JSON.stringify(chat) : `
-${JSON.stringify(chat)}`);
-        if (chat.detail.choices[0].finish_reason === "stop") {
-          console.log("\u54CD\u5E94\u5DF2\u7ED3\u675F", chat.text);
-          steamData.write(`data:${CLOSE_MARK_MSG}
-
-`);
-          steamData.end();
-        }
-        firstChunk = false;
-      },
-      systemMessage,
-      temperature,
-      top_p
-    });
-  } catch (error) {
-    ctx.body = error;
-  } finally {
-    next();
-  }
+  ctx.body = OpenAIStream(ctx.request.body);
 });
 router.post("/config", async (ctx) => {
   try {
