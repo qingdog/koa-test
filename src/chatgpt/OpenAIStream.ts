@@ -1,5 +1,7 @@
 import { createParser, ParsedEvent, ReconnectInterval } from "eventsource-parser";
-
+export const config = {
+  runtime: "edge",
+};
 export async function OpenAIStream(payload) {
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();

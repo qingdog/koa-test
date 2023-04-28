@@ -3,11 +3,7 @@ import koaBodyParser from "koa-bodyparser";
 import Router from "koa-router";
 import KoaStatic from "koa-static";
 import path from "path";
-import { fileURLToPath } from "url";
-import type { RequestProps } from "./types";
-import type { ChatMessage } from "chatgpt";
-import { PassThrough } from "stream";
-import { chatConfig, chatReplyProcess, currentModel } from "./chatgpt";
+import { chatConfig, currentModel } from "./chatgpt";
 import { isNotEmptyString } from "./utils/is";
 import { OpenAIStream } from "./chatgpt/OpenAIStream";
 
@@ -32,7 +28,7 @@ router.post("/chat-process", async (ctx, next) => {
     Connection: "keep-alive",
     // "Transfer-Encoding": "chunked",
   });
-  ctx.body = OpenAIStream(ctx.request.body)
+  ctx.body = await OpenAIStream(ctx.request.body)
   // const steamData = new PassThrough();
   // ctx.body = steamData;
   // try {
