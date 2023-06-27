@@ -5,13 +5,17 @@ import KoaStatic from "koa-static";
 import path from "path";
 import { chatConfig, currentModel } from "./chatgpt";
 import { isNotEmptyString } from "./utils/is";
-import { OpenAIStream } from "./chatgpt/OpenAIStream";
+import { Configuration, OpenAIApi } from "openai-edge";
+import { OpenAIStream, StreamingTextResponse, streamToResponse } from "ai";
 
 const app = new Koa();
 const staticPath = "../static";
-// console.log(__dirname)
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
+// Set the runtime to edge for best performance
+export const runtime = "edge";
+const config = new Configuration({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+const openai = new OpenAIApi(config);
 app.use(KoaStatic(path.join(__dirname, staticPath)));
 const router = new Router();
 router.get("/", async (ctx) => {
@@ -20,61 +24,17 @@ router.get("/", async (ctx) => {
   };
 });
 // SSE 请求，不返回标准 JSON，而是 UTF-8 文本
-const CLOSE_MARK_MSG = "--dev-zuo[DONE]dev-zuo--";
 router.post("/chat-process", async (ctx, next) => {
-  ctx.set({
-    "Content-Type": "text/event-stream",
-    "Cache-Control": "no-cache",
-    Connection: "keep-alive",
-    // "Transfer-Encoding": "chunked",
-  });
-  const stream = await OpenAIStream(ctx.request.body)
-  console.log(stream)
-  return new Response(stream)
-  // const steamData = new PassThrough();
-  // ctx.body = steamData;
-  // try {
-  //   const {
-  //     prompt,
-  //     options = {},
-  //     systemMessage,
-  //     temperature,
-  //     top_p,
-  //   } = ctx.request.body as RequestProps;
-  //   let firstChunk = true;
-  //   // const res = ctx.res
-  //   const res = await chatReplyProcess({
-  //     message: prompt,
-  //     lastContext: options,
-  //     process: (chat: ChatMessage) => {
-  //       console.log(chat);
-  //       // res.write(firstChunk ? JSON.stringify(chat) : `\n${JSON.stringify(chat)}`)
-  //       // ctx.body = passThrough;
-  //       // res.write(firstChunk ? JSON.stringify(chat) : `\n${JSON.stringify(chat)}`)
-  //       // stream.write(firstChunk ? JSON.stringify(chat) : `\n${JSON.stringify(chat)}`)
-  //       // ctx.body = firstChunk ? JSON.stringify(chat) : `\n${JSON.stringify(chat)}`
-  //       // passThrough.write(
-  //       //   firstChunk ? JSON.stringify(chat) : `\n${JSON.stringify(chat)}`
-  //       // );
-  //       steamData.write(firstChunk ? JSON.stringify(chat) : `\n${JSON.stringify(chat)}`);
-  //       // {"role":"assistant","id":"chatcmpl-74YzUfLNYFwbATCpNNEyg55UeAwi7","parentMessageId":"9a9fd7a2-8b9b-4e40-96ab-176bf80f1f43","text":"您好！","detail":{"id":"chatcmpl-74YzUfLNYFwbATCpNNEyg55UeAwi7","object":"chat.completion.chunk","created":1681322172,"model":"gpt-3.5-turbo-0301","choices":[{"delta":{},"index":0,"finish_reason":"stop"}]}}
-  //       if (chat.detail.choices[0].finish_reason === "stop") {
-  //         console.log("响应已结束", chat.text); // print the full text at the end
-  //         steamData.write(`data:${CLOSE_MARK_MSG}\n\n`);
-  //         steamData.end();
-  //       }
-  //       firstChunk = false;
-  //     },
-  //     systemMessage,
-  //     temperature,
-  //     top_p,
-  //   });
-  // } catch (error) {
-  //   ctx.body = error;
-  // } finally {
-  //   // ctx.end()
-  //   next();
-  // }
+  const response = await openai.createChatCompletion({
+    model: 'gpt-4',
+    stream: true,
+    messages: [{ role: 'user', content: 'What is love?' }],
+  })
+  const stream = OpenAIStream(response)
+
+  ctx.body = new StreamingTextResponse(stream, {
+    headers: { 'X-RATE-LIMIT': 'lol' },
+  })
 });
 // //
 router.post("/config", async (ctx) => {
