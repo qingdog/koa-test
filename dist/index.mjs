@@ -2,6 +2,7 @@
 import { createServer } from "http";
 import { Configuration, OpenAIApi } from "openai-edge";
 import { OpenAIStream, streamToResponse } from "ai";
+var runtime = "edge";
 var config = new Configuration({
   apiKey: process.env.OPENAI_API_KEY
 });
@@ -16,4 +17,7 @@ var server = createServer(async (req, res) => {
   streamToResponse(stream, res);
 });
 server.listen(3e3);
+export {
+  runtime
+};
 //# sourceMappingURL=index.mjs.map
