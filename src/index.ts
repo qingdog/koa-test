@@ -1,7 +1,7 @@
 import { createServer } from 'http'
 import { Configuration, OpenAIApi } from 'openai-edge'
 import { OpenAIStream, streamToResponse } from 'ai'
-
+export const runtime = 'edge'
 const config = new Configuration({
   apiKey: process.env.OPENAI_API_KEY
 })
