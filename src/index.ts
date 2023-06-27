@@ -5,8 +5,8 @@ import KoaStatic from "koa-static";
 import path from "path";
 import { chatConfig, currentModel } from "./chatgpt";
 import { isNotEmptyString } from "./utils/is";
-import { Configuration, OpenAIApi } from "openai-edge";
-import { OpenAIStream, StreamingTextResponse, streamToResponse } from "ai";
+import { Configuration, OpenAIApi } from 'openai-edge'
+import { OpenAIStream, streamToResponse } from 'ai'
 
 const app = new Koa();
 const staticPath = "../static";
@@ -25,16 +25,17 @@ router.get("/", async (ctx) => {
 });
 // SSE 请求，不返回标准 JSON，而是 UTF-8 文本
 router.post("/chat-process", async (ctx, next) => {
-  const response = await openai.createChatCompletion({
+  const aiResponse = await openai.createChatCompletion({
     model: 'gpt-4',
     stream: true,
-    messages: [{ role: 'user', content: 'What is love?' }],
+    messages: [{ role: 'user', content: 'What is love?' }]
   })
-  const stream = OpenAIStream(response)
+  // Transform the response into a readable stream
+  const stream = OpenAIStream(aiResponse)
 
-  ctx.body = new StreamingTextResponse(stream, {
-    headers: { 'X-RATE-LIMIT': 'lol' },
-  })
+  // Pipe the stream to the response
+  // @ts-ignore
+  streamToResponse(stream, ctx.response)
 });
 // //
 router.post("/config", async (ctx) => {

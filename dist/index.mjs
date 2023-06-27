@@ -161,7 +161,7 @@ function currentModel() {
 
 // src/index.ts
 import { Configuration, OpenAIApi } from "openai-edge";
-import { OpenAIStream, StreamingTextResponse } from "ai";
+import { OpenAIStream, streamToResponse } from "ai";
 var app = new Koa();
 var staticPath = "../static";
 var runtime = "edge";
@@ -177,15 +177,13 @@ router.get("/", async (ctx) => {
   };
 });
 router.post("/chat-process", async (ctx, next) => {
-  const response = await openai.createChatCompletion({
+  const aiResponse = await openai.createChatCompletion({
     model: "gpt-4",
     stream: true,
     messages: [{ role: "user", content: "What is love?" }]
   });
-  const stream = OpenAIStream(response);
-  ctx.body = new StreamingTextResponse(stream, {
-    headers: { "X-RATE-LIMIT": "lol" }
-  });
+  const stream = OpenAIStream(aiResponse);
+  streamToResponse(stream, ctx.response);
 });
 router.post("/config", async (ctx) => {
   try {
