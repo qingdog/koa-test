@@ -166,7 +166,8 @@ var app = new Koa();
 var staticPath = "../static";
 var runtime = "edge";
 var config2 = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: process.env.OPENAI_API_KEY,
+  basePath: "https://api.openai.com"
 });
 var openai = new OpenAIApi(config2);
 app.use(KoaStatic(path2.join(__dirname, staticPath)));
@@ -178,7 +179,7 @@ router.get("/", async (ctx) => {
 });
 router.post("/chat-process", async (ctx, next) => {
   const aiResponse = await openai.createChatCompletion({
-    model: "gpt-4",
+    model: "gpt3",
     stream: true,
     messages: [{ role: "user", content: "What is love?" }]
   });

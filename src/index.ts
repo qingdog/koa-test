@@ -14,6 +14,7 @@ const staticPath = "../static";
 export const runtime = "edge";
 const config = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
+  basePath: 'https://api.openai.com',
 });
 const openai = new OpenAIApi(config);
 app.use(KoaStatic(path.join(__dirname, staticPath)));
@@ -26,9 +27,9 @@ router.get("/", async (ctx) => {
 // SSE 请求，不返回标准 JSON，而是 UTF-8 文本
 router.post("/chat-process", async (ctx, next) => {
   const aiResponse = await openai.createChatCompletion({
-    model: 'gpt-4',
+    model: 'gpt3',
     stream: true,
-    messages: [{ role: 'user', content: 'What is love?' }]
+    messages: [{ role: 'user', content: 'What is love?' }],
   })
   // Transform the response into a readable stream
   const stream = OpenAIStream(aiResponse)
