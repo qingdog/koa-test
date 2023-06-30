@@ -27,7 +27,7 @@ router.get("/", async (ctx) => {
 // SSE 请求，不返回标准 JSON，而是 UTF-8 文本
 router.post("/chat-process", async (ctx, next) => {
   const aiResponse = await openai.createChatCompletion({
-    model: 'gpt3',
+    model: 'gpt-3.5-turbo-16k-0613',
     stream: true,
     messages: [{ role: 'user', content: 'What is love?' }],
   })
