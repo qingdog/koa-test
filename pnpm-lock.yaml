@@ -9,7 +9,7 @@ specifiers:
   '@types/mockjs': ^1.0.7
   '@types/node': ^18.14.6
   '@vercel/node': ^2.12.0
-  ai: ^2.1.8
+  ai: ^2.1.13
   axios: ^0.27.2
   chatgpt: ^5.2.2
   dotenv: ^16.0.3
@@ -27,7 +27,7 @@ specifiers:
   mockjs: ^1.1.0
   node-fetch: ^3.3.1
   nodemon: ^2.0.22
-  openai-edge: ^1.1.0
+  openai-edge: ^1.1.1
   pre-commit: ^1.2.2
   rimraf: ^5.0.0
   socks-proxy-agent: ^7.0.0
@@ -39,7 +39,7 @@ specifiers:
 dependencies:
   '@types/koa-static': registry.npmmirror.com/@types/koa-static/4.0.2
   '@vercel/node': registry.npmmirror.com/@vercel/node/2.12.0
-  ai: 2.1.8
+  ai: 2.1.13
   axios: registry.npmmirror.com/axios/0.27.2
   chatgpt: registry.npmmirror.com/chatgpt/5.2.2
   dotenv: registry.npmmirror.com/dotenv/16.0.3
@@ -56,7 +56,7 @@ dependencies:
   koa2-cors: registry.npmmirror.com/koa2-cors/2.0.6
   mockjs: registry.npmmirror.com/mockjs/1.1.0
   node-fetch: registry.npmmirror.com/node-fetch/3.3.1
-  openai-edge: 1.1.0
+  openai-edge: 1.1.1
   socks-proxy-agent: registry.npmmirror.com/socks-proxy-agent/7.0.0
 
 devDependencies:
@@ -2336,12 +2336,12 @@ packages:
     resolution: {integrity: sha512-hCOfMzbFx5IDutmWLAt6MZwOUjIfSM9G9FyVxytmE4Rs/5YDPWQrD/+IR1w+FweD9H2oOZEnv36TmkjhNURBVA==}
     dev: true
 
-  /ai/2.1.8:
-    resolution: {integrity: sha512-r3/bLvfWe69Y9MvHJHwemMI/YCXGbKK8bqYJwvuFG732PElvBBWA2a6C3Kwh0rZLvomlkboWsq+XFW8edLRoLw==}
+  /ai/2.1.13:
+    resolution: {integrity: sha512-huPgaFymrTIQcF/S5t02ohTXCtUrMVbPrLcxEB2hc7oKYM8dajfd0y6iOIIuI1S+d+JFbs3CrkeUX30VRot4/Q==}
     engines: {node: '>=14.6'}
     peerDependencies:
-      react: ^18.0.0
-      svelte: ^3.29.0
+      react: ^18.2.0
+      svelte: ^4.0.0
       vue: ^3.3.4
     peerDependenciesMeta:
       react:
@@ -4777,9 +4777,9 @@ packages:
       mimic-fn: 2.1.0
     dev: true
 
-  /openai-edge/1.1.0:
-    resolution: {integrity: sha512-VkXT7yhKjr1QlC/wIMuPW/s003cPHUtiNjt/kH+54iKDZZ7eiGMPuymhpSWJ/zVZfVz6+94okGd6rNuu7JRBDw==}
-    engines: {node: '>=12'}
+  /openai-edge/1.1.1:
+    resolution: {integrity: sha512-dVbGYFU4kzHeqzUYlJQuLgahB5BvGCjuyVQMiet3WLTq5AIueyS572wLLSn764wKdjWbl8xurFL9cjmwlpAO5w==}
+    engines: {node: '>=18'}
     dev: false
 
   /optionator/0.8.3:
