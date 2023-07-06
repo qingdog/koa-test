@@ -9,7 +9,7 @@ specifiers:
   '@types/mockjs': ^1.0.7
   '@types/node': ^18.14.6
   '@vercel/node': ^2.12.0
-  ai: ^2.1.13
+  ai: ^2.1.14
   axios: ^0.27.2
   chatgpt: ^5.2.2
   dotenv: ^16.0.3
@@ -39,7 +39,7 @@ specifiers:
 dependencies:
   '@types/koa-static': registry.npmmirror.com/@types/koa-static/4.0.2
   '@vercel/node': registry.npmmirror.com/@vercel/node/2.12.0
-  ai: 2.1.13
+  ai: 2.1.14
   axios: registry.npmmirror.com/axios/0.27.2
   chatgpt: registry.npmmirror.com/chatgpt/5.2.2
   dotenv: registry.npmmirror.com/dotenv/16.0.3
@@ -2336,8 +2336,8 @@ packages:
     resolution: {integrity: sha512-hCOfMzbFx5IDutmWLAt6MZwOUjIfSM9G9FyVxytmE4Rs/5YDPWQrD/+IR1w+FweD9H2oOZEnv36TmkjhNURBVA==}
     dev: true
 
-  /ai/2.1.13:
-    resolution: {integrity: sha512-huPgaFymrTIQcF/S5t02ohTXCtUrMVbPrLcxEB2hc7oKYM8dajfd0y6iOIIuI1S+d+JFbs3CrkeUX30VRot4/Q==}
+  /ai/2.1.14:
+    resolution: {integrity: sha512-P9jPlHqZZlXJ9Tva6FSqyJvWi0lVKenEpoxGvenkQH3QfT9qKpPj4sEF71mmrRgXrKQiMjhFcxpI22bvhskT/A==}
     engines: {node: '>=14.6'}
     peerDependencies:
       react: ^18.2.0
