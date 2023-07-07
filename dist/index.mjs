@@ -17,7 +17,8 @@ var openai = new OpenAIApi(config);
 router.post("/chat-process", [], async (req, res) => {
   res.setHeader("Content-type", "application/octet-stream");
   const aiResponse = await openai.createChatCompletion({
-    model: "gpt-3.5-turbo-16k-0613",
+    // model: "gpt-3.5-turbo-16k-0613",
+    model: "gpt-4-0613",
     stream: true,
     messages: [{ role: "user", content: "What is love?" }]
   });
