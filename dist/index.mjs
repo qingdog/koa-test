@@ -2,10 +2,13 @@
 import express from "express";
 import { Configuration, OpenAIApi } from "openai-edge";
 import { OpenAIStream, streamToResponse } from "ai";
+var config = {
+  supportsResponseStreaming: true
+};
 var app = express();
 var router = express.Router();
 var runtime = "edge";
-var config = new Configuration({
+var OpenAiConfig = new Configuration({
   apiKey: process.env.OPENAI_API_KEY
 });
 app.use(express.static("public"));
@@ -13,7 +16,7 @@ app.use(express.json());
 app.all("*", (_, res, next) => {
   next();
 });
-var openai = new OpenAIApi(config);
+var openai = new OpenAIApi(OpenAiConfig);
 router.post("/chat-process", [], async (req, res) => {
   res.setHeader("Content-type", "application/octet-stream");
   const aiResponse = await openai.createChatCompletion({
@@ -30,6 +33,7 @@ app.use("/api", router);
 app.set("trust proxy", 1);
 app.listen(3002, () => globalThis.console.log("Server is running on port 3002"));
 export {
+  config,
   runtime
 };
 //# sourceMappingURL=index.mjs.map

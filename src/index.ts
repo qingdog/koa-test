@@ -1,10 +1,13 @@
 import express from "express";
 import { Configuration, OpenAIApi } from "openai-edge";
 import { OpenAIStream, streamToResponse } from "ai";
+export const config = {
+  supportsResponseStreaming: true,
+}
 const app = express();
 const router = express.Router();
 export const runtime = "edge";
-const config = new Configuration({
+const OpenAiConfig = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
 });
 app.use(express.static("public"));
@@ -16,7 +19,7 @@ app.all("*", (_, res, next) => {
   // res.header("Access-Control-Allow-Methods", "*");
   next();
 });
-const openai = new OpenAIApi(config);
+const openai = new OpenAIApi(OpenAiConfig);
 router.post("/chat-process", [], async (req, res) => {
   res.setHeader("Content-type", "application/octet-stream");
 
