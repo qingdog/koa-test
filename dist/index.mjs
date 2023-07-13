@@ -1,37 +1,25 @@
 // src/index.ts
-import express from "express";
+import { createServer } from "http";
 import { Configuration, OpenAIApi } from "openai-edge";
 import { OpenAIStream, streamToResponse } from "ai";
+var runtime = "edge";
 var config = {
   supportsResponseStreaming: true
 };
-var app = express();
-var router = express.Router();
-var runtime = "edge";
-var OpenAiConfig = new Configuration({
+var OpenAIConfig = new Configuration({
   apiKey: process.env.OPENAI_API_KEY
 });
-app.use(express.static("public"));
-app.use(express.json());
-app.all("*", (_, res, next) => {
-  next();
-});
-var openai = new OpenAIApi(OpenAiConfig);
-router.post("/chat-process", [], async (req, res) => {
-  res.setHeader("Content-type", "application/octet-stream");
+var openai = new OpenAIApi(OpenAIConfig);
+var server = createServer(async (req, res) => {
   const aiResponse = await openai.createChatCompletion({
     model: "gpt-3.5-turbo-16k-0613",
-    // model: "gpt-4-0613",
     stream: true,
     messages: [{ role: "user", content: "What is love?" }]
   });
   const stream = OpenAIStream(aiResponse);
   streamToResponse(stream, res);
 });
-app.use("", router);
-app.use("/api", router);
-app.set("trust proxy", 1);
-app.listen(3002, () => globalThis.console.log("Server is running on port 3002"));
+server.listen(3e3);
 export {
   config,
   runtime
