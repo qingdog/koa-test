@@ -1,38 +1,27 @@
-import express, { Request, Response } from "express";
-import dotenv from "dotenv";
-const app = express();
-dotenv.config();
+import { createServer } from 'http'
+import { Configuration, OpenAIApi } from 'openai-edge'
+import { OpenAIStream, streamToResponse } from 'ai'
 
-const apiUrl = process.env.API_URL;
+const OpenAIConfig = new Configuration({
+  apiKey: process.env.OPENAI_API_KEY
+})
+const openai = new OpenAIApi(OpenAIConfig)
+const runtime = "edge";
+const config = {
+  supportsResponseStreaming: true
+};
+const server = createServer(async (req, res) => {
+  const aiResponse = await openai.createChatCompletion({
+    model: "gpt-3.5-turbo-16k-0613",
+    stream: true,
+    messages: [{ role: 'user', content: 'What is love?' }]
+  })
 
-app.use(express.static("public"));
+  // Transform the response into a readable stream
+  const stream = OpenAIStream(aiResponse)
 
-const html = `
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-  </head>
-  <body>
-    <script type="text/javascript">
-        localStorage.setItem('apiUrl', '${apiUrl}')
-        window.location.href ='/';
-    </script>
-  </body>
-</html>
-`;
+  // Pipe the stream to the response
+  streamToResponse(stream, res)
+})
 
-app.get("/api", (req: Request, res: Response) => {
-  res.send(html);
-});
-
-app.get("/api/users", (req: Request, res: Response) => {
-  res.send({ name: "wai", email: "wai@gmail.com" });
-});
-
-app.listen(9000, () => {
-  console.log("Server is listening at port 9000");
-});
+server.listen(3000)
