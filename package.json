@@ -1,52 +1,20 @@
 {
-  "name": "koa-ts-01",
+  "name": "myvercel-express",
   "version": "1.0.0",
   "description": "",
+  "main": "index.js",
   "scripts": {
-    "dev": "esno watch src/index.ts",
-    "clean": "rimraf build",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "common:cleanup": "rimraf node_modules && rimraf pnpm-lock.yaml"
+    "dev": "ts-node-dev api/index.ts"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@types/koa-static": "^4.0.2",
-    "@vercel/node": "^2.12.0",
-    "ai": "^2.1.14",
-    "axios": "^0.27.2",
-    "chatgpt": "^5.2.2",
     "dotenv": "^16.0.3",
-    "esno": "^0.16.3",
     "express": "^4.18.2",
-    "express-rate-limit": "^6.7.0",
-    "https-proxy-agent": "^5.0.1",
-    "isomorphic-fetch": "^3.0.0",
-    "koa": "^2.14.2",
-    "koa-bodyparser": "^4.4.0",
-    "koa-combine-routers": "^4.0.2",
-    "koa-router": "^12.0.0",
-    "koa-static": "^5.0.0",
-    "koa2-cors": "^2.0.6",
-    "mockjs": "^1.1.0",
-    "node-fetch": "^3.3.1",
-    "openai-edge": "^1.1.1",
-    "socks-proxy-agent": "^7.0.0"
+    "typescript": "^4.9.5"
   },
   "devDependencies": {
     "@types/express": "^4.17.17",
-    "@types/koa": "^2.13.6",
-    "@types/koa-bodyparser": "^4.3.10",
-    "@types/koa-router": "^7.4.4",
-    "@types/mockjs": "^1.0.7",
-    "@types/node": "^18.14.6",
-    "nodemon": "^2.0.22",
-    "pre-commit": "^1.2.2",
-    "rimraf": "^5.0.0",
-    "ts-node": "^10.9.1",
-    "tsup": "^6.6.3",
-    "typescript": "^4.9.5",
-    "vercel": "^28.20.0"
+    "ts-node-dev": "^2.0.0"
   }
 }
