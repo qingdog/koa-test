@@ -2,15 +2,15 @@
 import { createServer } from "http";
 import { Configuration, OpenAIApi } from "openai-edge";
 import { OpenAIStream, streamToResponse } from "ai";
-var runtime = "edge";
-var config = {
+const runtime = "edge";
+const config = {
   supportsResponseStreaming: true
 };
-var OpenAIConfig = new Configuration({
+const OpenAIConfig = new Configuration({
   apiKey: process.env.OPENAI_API_KEY
 });
-var openai = new OpenAIApi(OpenAIConfig);
-var server = createServer(async (req, res) => {
+const openai = new OpenAIApi(OpenAIConfig);
+const server = createServer(async (req, res) => {
   const aiResponse = await openai.createChatCompletion({
     model: "gpt-3.5-turbo-16k-0613",
     stream: true,
