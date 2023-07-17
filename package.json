@@ -3,10 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "start": "node ./dist/index.mjs",
     "dev": "esno watch src/index.ts",
-    "prod": "node ./dist/index.mjs",
-    "build": "pnpm clean && tsup",
     "clean": "rimraf build",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
