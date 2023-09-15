@@ -12,7 +12,7 @@ const OpenAIConfig = new Configuration({
 })
 const openai = new OpenAIApi(OpenAIConfig)
 const runtime = "edge";
-const config = {
+export const config = {
     supportsResponseStreaming: true
 };
 
