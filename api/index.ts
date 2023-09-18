@@ -8,7 +8,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 const OpenAIConfig = new Configuration({
     basePath: process.env.OPENAI_BASE_PATH || 'https://api.openai.com/v1',
-    apiKey: process.env.OPENAI_API_KEY
+    apiKey: process.env.OPENAI_API_KEY,
 })
 const openai = new OpenAIApi(OpenAIConfig)
 const runtime = "edge";
@@ -17,6 +17,9 @@ export const config = {
 };
 
 const server = createServer(async (req, res) => {
+    await openai.listModels({
+
+    })
     if (req.url === '/v1/chat/completions') {
         const aiResponse = await openai.createChatCompletion({
             model: "gpt-3.5-turbo",
@@ -25,10 +28,10 @@ const server = createServer(async (req, res) => {
         })
 
         // Transform the response into a readable stream
-        const stream = OpenAIStream(aiResponse)
+        const readableStream = OpenAIStream(aiResponse)
 
         // Pipe the stream to the response
-        streamToResponse(stream, res)
+        streamToResponse(readableStream, res)
     } else {
         const uri = req.url === '/' ? '/index.html': req.url;
         fs.readFile(path.join(__dirname, '../public' + uri), (err, data) => {
@@ -39,4 +42,7 @@ const server = createServer(async (req, res) => {
     }
 })
 
-server.listen(3000)
+const PORT = 3000;
+server.listen(PORT, () => {
+    console.log(`Server is listening on port ${PORT}`);
+});

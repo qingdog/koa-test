@@ -10,8 +10,10 @@
   "license": "ISC",
   "dependencies": {
     "ai": "^2.1.21",
+    "axios": "^1.5.0",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "https-proxy-agent": "^7.0.2",
     "openai-edge": "^1.2.0",
     "typescript": "^4.9.5"
   },
